@@ -1,0 +1,23 @@
+#app {
+  margin: 20px 0 0 0 ;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+}
+
+
+
+
+
+@media (min-width: 1024px) {
+  body {
+    background-color: #BA4949;
+  }
+
+  #app {
+    padding: 0;
+  }
+}
