@@ -1,11 +1,13 @@
 <script setup>
 
-import { ref , computed } from 'vue';
+import { ref , computed ,inject} from 'vue';
 import restart from '../assets/restart.svg';
 import setting from '../assets/settings.svg';
 const timeLeft = ref(30 * 60); // Default: 30 min in seconds
 const timer = ref(null);
 const isRunning = ref(false);
+const increment = inject('increment');
+const currentTaskIndex = inject('taskIndex');
 const formatTime = computed(() => {
   const minutes = Math.floor(timeLeft.value / 60);
   const seconds = timeLeft.value % 60;
@@ -13,13 +15,17 @@ const formatTime = computed(() => {
 });
 const status = ref(0);
 const startTimer = () => {
-  if (!isRunning.value) {
+  if (!isRunning.value && currentTaskIndex.value != null) {
     isRunning.value = true;
     timer.value = setInterval(() => {
       if (timeLeft.value > 0) {
         timeLeft.value--;
       } else {
         stopTimer();
+        if(status.value === 0){
+            increment();
+        }
+
       }
     }, 1000);
   }

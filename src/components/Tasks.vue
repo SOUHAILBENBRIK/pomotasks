@@ -1,28 +1,101 @@
 <script setup>
+import { ref , inject} from 'vue';
 import settings from '../assets/settings.svg';
 import more from '../assets/more.png';
-import dots from '../assets/dots.svg';
-import { ref } from 'vue';
-const currentTask = ref("Time to focus!");
-const tasks = ref(["hi","hello","bye"]);    
+import editIcon from '../assets/edit.svg';
+import deleteIcon from '../assets/delete.svg' ;
+import arrow_down from '../assets/arrow-down.svg'; 
+import arrow_up from '../assets/arrow-up.svg';
+import axios from 'axios';
+const currentTaskIndex = inject('taskIndex');
+const currentTaskName = ref("");
+const tasks = inject('tasks');
+const getallTasks = inject('getall');
+const changeTask = inject('changeIndex');
+const cycleNumber = ref(0);
+const sumOfCycle = ref(0);
+const isOpen = ref(false) ; 
+
+function increment(){
+    cycleNumber.value+=1 ;
+}
+function decrement(){
+    if(cycleNumber.value >0){
+        cycleNumber.value -= 1 ; 
+    }
+    
+}
+
+function openAddTask(){
+    isOpen.value = true;
+}
+function closeAddTask(){
+    isOpen.value = false;
+}
+function editTask(task){
+    console.log("edit"+task);
+}
+function deleteTask(task){
+    console.log("delete"+task);}
+function addTask(){
+    if(currentTaskName.value === "" || cycleNumber.value === 0){
+        return;
+    }
+   
+    
+    axios.post('http://localhost:8000/taskP', 
+    {name: currentTaskName.value, cyleNumber: cycleNumber.value , finishedCycle : 0}).then(async (response) => {
+        console.log(response.data);
+        if(response.data.status === "success"){
+            await getallTasks();
+        }
+        
+      });
+    
+    currentTaskName.value = "";
+    sumOfCycle.value += cycleNumber.value;
+    cycleNumber.value = 0;
+    isOpen.value = false;
+}
+
+
 </script >
 
 <template>
     <div class="taskContainer">
         <p class="currentTaskStyle">#1</p>
-        <p class="currentTaskStyle">{{ currentTask }} </p>
-        <diV class="tasksBar">  
+        <p class="currentTaskStyle" v-if="currentTaskIndex != null">{{ tasks[currentTaskIndex]['name'] }} </p>
+        <p class="currentTaskStyle" v-else>Time to focus! </p>
+        <div class="tasksBar">  
             <h2>Tasks</h2>
             <img :src="settings" class="icons" >
         </div>
         
         <div >
-            <div v-for="(task,index) in tasks" :key="index" class="fullTask">
-                <p class="textAddText">{{ task }}</p>
-                <img :src="dots" alt=""  class="dotsIcons">
+            <div v-for="(task,index) in tasks" :key="index" class="fullTask" @click="changeTask(index)">
+                <p class="textAddText">{{ task['name'] }}</p>
+                <div style="display: flex; gap: 10px; align-items: center; justify-content: center;">
+                    <p class="textAddText">{{ task['finishedCycle'] }} / {{ task['cyleNumber'] }}</p>
+                <img :src="editIcon" alt=""  class="dotsIcons" @click="">
+                <img :src="deleteIcon" alt=""  class="dotsIcons" @click="">
+                </div>
             </div>
         </div>
-        <div class="emptyTask" >
+        <div class="addTask" v-if="isOpen">
+          <input type="text" class="addTaskInput" placeholder="Add Task" v-model="currentTaskName">
+         
+          <div class="addTaskRow">
+            <p class="titleAddTask">Cycle Number</p>
+            <p class="titleAddTask">{{ cycleNumber }}</p>
+            <img :src="arrow_up" alt="" class="iconsTask" @click="increment">
+            <img :src="arrow_down" alt="" class="iconsTask" @click="decrement">
+          </div>
+          <div class="buttonAddTask" >
+            <button class="cancelButton" @click="closeAddTask" >Cancel</button>
+            <button class="saveButton" @click = "addTask" >Save</button>
+          </div>
+        </div>
+        <div class="emptyTask" @click="openAddTask">
             <img :src="more" alt=""  class="icon">
             <p class="textAddText">Add Task </p>
         </div>
@@ -95,6 +168,7 @@ h2{
     cursor: pointer;
     background-color: rgba(0,0,0,0.2);
     gap: 30px;
+    cursor: pointer;
 }
 .textAddText{
     font-size: 1.2rem;
@@ -111,7 +185,81 @@ h2{
     border-radius: 10px;
     padding: 5px 10px;
     margin: 10px 0;
+    cursor: pointer;
 
+}
+.addTask {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    width: 30vw;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 5px;
+    border-radius: 10px;
+    margin-top: 10px;
+    
+
+}
+.addTaskRow{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+    
+}
+.addTaskInput{
+    width: 25vw;
+    height: 35px;
+    border-radius: 10px;
+    border: none;
+    background-color: rgba(0,0,0,0.1);
+    margin: 0;
+    padding: 2px 6px;
+}
+.titleAddTask{
+    font-size: 1rem;
+    color: black;
+}
+.iconsTask{
+    color: black;
+    background-color: black;
+    border-radius: 100%;
+    height: 30px;
+    width: 30px;
+    cursor: pointer;
+}
+.buttonAddTask{
+    
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+    gap: 30px;
+    
+   
+
+}
+.cancelButton{
+    background-color: black;
+    padding: 10px 5px;
+    color: white;
+    width: 150px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+.saveButton{
+    background-color: wheat;
+    padding: 10px 5px;
+    color: black;
+    width: 150px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
 }
 
 </style>
