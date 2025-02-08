@@ -19,6 +19,14 @@ const isOpen = ref(false) ;
 function increment(){
     cycleNumber.value+=1 ;
 }
+function incrementTask(task){
+    task['cyleNumber'] += 1 ; 
+}
+function decremenTask(task){
+    if(task['cyleNumber'] >0){
+        task['cyleNumber'] -= 1 ; 
+    }
+}
 function decrement(){
     if(cycleNumber.value >0){
         cycleNumber.value -= 1 ; 
@@ -34,9 +42,31 @@ function closeAddTask(){
 }
 function editTask(task){
     console.log("edit"+task);
+    task['edit'] = true;
+}
+function cancelEdit(task){
+    
+    task['edit'] = false;
+}
+function saveEditTask(task){
+    task['edit'] = false;
+    axios.put('http://localhost:8000/taskP/'+task['id'], 
+    {name: task['name'], cyleNumber: task['cyleNumber'] , finishedCycle : task['finishedCycle']}).then(async (response) => {
+        console.log(response.data);
+        if(response.data.status === "success"){
+            await getallTasks();
+        }
+        
+      });
 }
 function deleteTask(task){
-    console.log("delete"+task);}
+    axios.delete('http://localhost:8000/taskP/'+task['id'],).then(async (response) => {
+        console.log(response.data);
+        if(response.data.status === "success"){
+            await getallTasks();
+        }
+        
+      });}
 function addTask(){
     if(currentTaskName.value === "" || cycleNumber.value === 0){
         return;
@@ -72,13 +102,31 @@ function addTask(){
         </div>
         
         <div >
-            <div v-for="(task,index) in tasks" :key="index" class="fullTask" @click="changeTask(index)">
-                <p class="textAddText">{{ task['name'] }}</p>
+            <div v-for="(task,index) in tasks" :key="index"  >
+                <div class="fullTask" @click="changeTask(index)" v-if="task['edit'] === false">
+                    <p class="textAddText">{{ task['name'] }}</p>
                 <div style="display: flex; gap: 10px; align-items: center; justify-content: center;">
                     <p class="textAddText">{{ task['finishedCycle'] }} / {{ task['cyleNumber'] }}</p>
-                <img :src="editIcon" alt=""  class="dotsIcons" @click="">
-                <img :src="deleteIcon" alt=""  class="dotsIcons" @click="">
+                <img :src="editIcon" alt=""  class="dotsIcons" @click="editTask(task)">
+                <img :src="deleteIcon" alt=""  class="dotsIcons" @click="deleteTask(task)">
                 </div>
+                </div>
+                <div v-else class="addTask">
+                    <input type="text" class="addTaskInput" v-model="task['name']">
+                    <div class="addTaskRow">
+                        <p class="titleAddTask">Cycle Number</p>
+                        <p class="titleAddTask">{{ task['cyleNumber'] }}</p>
+                        <img :src="arrow_up" alt="" class="iconsTask" @click="incrementTask(task)">
+                        <img :src="arrow_down" alt="" class="iconsTask" @click="decremenTask(task)">
+                    </div>
+                    <div class="buttonAddTask" >
+                        <button class="cancelButton" @click="cancelEdit(task)" >Cancel</button>
+                        <button class="saveButton" @click="saveEditTask(task)" >Save</button>
+                    </div>
+                </div>
+                   
+                
+                
             </div>
         </div>
         <div class="addTask" v-if="isOpen">
