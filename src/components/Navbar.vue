@@ -1,5 +1,11 @@
 <script setup>
+import { RouterLink } from 'vue-router';
 import check from '../assets/check.svg';
+import person from '../assets/person.svg';
+import router from '@/router';
+function navigateToSignUp(){
+    router.push('/signup');
+}
 </script>
 
 <template>
@@ -9,9 +15,11 @@ import check from '../assets/check.svg';
                 <img :src="check" >
             <h1 class="title">PomoTasks</h1>
             </div>
-        <div>
+        <div class="rightNavBar">
             <button class="buttonNav">Report</button>
         <button class="buttonNav">Settings</button>
+        <img :src="person" class="icons" @click="navigateToSignUp">
+
         </div>
         </div>
     </nav>
@@ -47,6 +55,13 @@ import check from '../assets/check.svg';
         width: 40vw;
         box-shadow: 0px 0.5px  2px  #753939;  
     }
+    .rightNavBar{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
     .title {
         font-size: 2rem;
         color: white;
@@ -61,5 +76,14 @@ import check from '../assets/check.svg';
         border: 1px solid white;
         margin: 0px 5px;
         color: white;
+    }
+    .icons{
+        width: 30px;
+        height: 30px;
+        border: none;
+        cursor: pointer;
+        border-radius: 100%;
+        background-color: rgba(255, 255, 255, 0.4);
+        padding: 5px;
     }
 </style>
