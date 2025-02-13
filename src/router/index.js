@@ -5,14 +5,15 @@ import SignupView from '../pages/Signup.vue';
 import SignInView from '../pages/SignIn.vue';
 import ProfileView from '../pages/Profile.vue';
 import HelpView from '../pages/Help.vue';
-
+import VueCookies from 'vue-cookies';
 
 const routes = [
     
     { 
       path: '/',
       component: HomeView ,
-      name: 'home'},
+      name: 'home',
+      meta: { requiresAuth: true }},
     { 
        path: '/signup',
        component: SignupView ,
@@ -25,7 +26,8 @@ const routes = [
     {
       path : '/profile',
       component : ProfileView,
-      name : 'profile'
+      name : 'profile',
+      meta: { requiresAuth: true }
     },
     {
       path : '/help',
@@ -40,6 +42,16 @@ const routes = [
     history: createWebHistory(import.meta.env.BASE_URL),
     routes : routes,
   })
+
+  router.beforeEach((to, from, next) => {
+    const token = VueCookies.get('token'); 
+  
+    if (to.meta.requiresAuth && !token) {
+      next('/login');
+    } else {
+      next();
+    }
+  });
 
 
   export default router;

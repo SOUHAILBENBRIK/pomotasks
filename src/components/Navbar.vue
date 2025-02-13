@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref,inject } from 'vue';
 import check from '../assets/check.svg';
 import person from '../assets/person.svg';
 import router from '@/router';
@@ -10,7 +10,8 @@ import { useWindowSize } from '@vueuse/core';
 
 const userName = ref("");
 const showDropDown = ref(false);
-const { width } = useWindowSize()
+const { width } = useWindowSize();
+const tasks = inject('tasks');
 function showDropDownMenu(){
     showDropDown.value = !showDropDown.value;
 }
@@ -18,6 +19,8 @@ function logout(){
     VueCookies.remove('token');
     showDropDown.value = false;
     userName.value = "";
+    tasks.value = [];
+    router.push('/login');
 }
 function navigateElement(path){
     router.push(path);
