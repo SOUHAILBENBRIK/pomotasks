@@ -7,6 +7,7 @@ import deleteIcon from '../assets/delete.svg' ;
 import arrow_down from '../assets/arrow-down.svg'; 
 import arrow_up from '../assets/arrow-up.svg';
 import axios from 'axios';
+import VueCookies from 'vue-cookies';
 const currentTaskIndex = inject('taskIndex');
 const currentTaskName = ref("");
 const tasks = inject('tasks');
@@ -15,6 +16,7 @@ const changeTask = inject('changeIndex');
 const cycleNumber = ref(0);
 const sumOfCycle = ref(0);
 const isOpen = ref(false) ; 
+const showDropDown = ref(false);
 
 function increment(){
     cycleNumber.value+=1 ;
@@ -49,32 +51,75 @@ function cancelEdit(task){
     task['edit'] = false;
 }
 function saveEditTask(task){
+    if(VueCookies.get("token") === undefined){
+        alert("You need to login first");
+        return;
+    }else{
     task['edit'] = false;
     axios.put('http://localhost:8000/taskP/'+task['id'], 
-    {name: task['name'], cyleNumber: task['cyleNumber'] , finishedCycle : task['finishedCycle']}).then(async (response) => {
+    {name: task['name'], cyleNumber: task['cyleNumber'] , finishedCycle : task['finishedCycle']},{headers : {
+        'Authorization': 'Bearer ' + VueCookies.get('token'),
+    }}).then(async (response) => {
         console.log(response.data);
         if(response.data.status === "success"){
             await getallTasks();
         }
         
       });
-}
+}}
 function deleteTask(task){
-    axios.delete('http://localhost:8000/taskP/'+task['id'],).then(async (response) => {
+    if(VueCookies.get("token") === undefined){
+        alert("You need to login first");
+        return;
+    }else{
+    axios.delete('http://localhost:8000/taskP/'+task['id'],{headers : {
+        'Authorization': 'Bearer ' + VueCookies.get('token'),
+    }}).then(async (response) => {
         console.log(response.data);
         if(response.data.status === "success"){
             await getallTasks();
+            currentTaskIndex.value = null;}
+        
+      });}}
+function showDropDownMenu(){
+    showDropDown.value = !showDropDown.value;
+}
+function deleteAllTasks(){
+    if(VueCookies.get("token") === undefined){
+        alert("You need to login first");
+        return;
+    }else{
+        const userId = VueCookies.get('user_id');
+    axios.delete('http://localhost:8000/taskP/user/'+userId,{headers : 
+        {
+        'Authorization': 'Bearer ' + VueCookies.get('token'),
+        }
+    }).then(async (response) => {
+        console.log(response.data);
+        if(response.data.status === "success"){
+            await getallTasks();
+            currentTaskIndex.value = null;
+            showDropDownMenu();
         }
         
-      });}
+      });
+}}
 function addTask(){
     if(currentTaskName.value === "" || cycleNumber.value === 0){
         return;
     }
    
-    
+    if(VueCookies.get("token") === undefined){
+        alert("You need to login first");
+        return;
+    }else{
+    const userId = VueCookies.get('user_id');
     axios.post('http://localhost:8000/taskP', 
-    {name: currentTaskName.value, cyleNumber: cycleNumber.value , finishedCycle : 0}).then(async (response) => {
+    {name: currentTaskName.value, cyleNumber: cycleNumber.value , finishedCycle : 0 , user : userId},{
+        headers : {
+        'Authorization': 'Bearer ' + VueCookies.get('token'),
+        }
+    }).then(async (response) => {
         console.log(response.data);
         if(response.data.status === "success"){
             await getallTasks();
@@ -86,7 +131,7 @@ function addTask(){
     sumOfCycle.value += cycleNumber.value;
     cycleNumber.value = 0;
     isOpen.value = false;
-}
+}}
 
 
 </script >
@@ -98,7 +143,13 @@ function addTask(){
         <p class="currentTaskStyle" v-else>Time to focus! </p>
         <div class="tasksBar">  
             <h2>Tasks</h2>
-            <img :src="settings" class="icons" >
+            <div style="position: relative;">
+                <img :src="settings" class="icons" @click="showDropDownMenu">
+                <div class="dropDown" v-if="showDropDown">
+                    <p @click="deleteAllTasks">Delete all Tasks</p>
+                    <p>Delete finished tasks</p>
+                </div>
+            </div>
         </div>
         
         <div >
@@ -308,6 +359,23 @@ h2{
     border: none;
     border-radius: 10px;
     cursor: pointer;
+}
+.dropDown{
+    position: absolute;
+    z-index: 100;
+    width: 150px;
+    background-color: white;
+    color: black;
+    padding: 0;
+    margin: 0;
+    border-radius: 5px;
+}
+.dropDown p{
+    padding: 5px 5px;
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: normal;
 }
 
 </style>

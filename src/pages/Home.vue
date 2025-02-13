@@ -7,6 +7,7 @@ import axios from 'axios';
 const counter  = ref(0);
 const taskIndex = ref(null);
 const tasks = ref([]);
+import VueCookies from 'vue-cookies';
 const increment = () => {
   console.log(taskIndex.value);
   console.log(tasks.value);
@@ -16,12 +17,22 @@ function changeIndex(index){
   taskIndex.value = index;
 }
 function getall(){
-  axios.get('http://localhost:8000/taskP').then((response) => {
+  if(VueCookies.get('token') === undefined){
+    alert("You need to login first");
+  }else{
+    const userId = VueCookies.get('user_id');
+    axios.get('http://localhost:8000/taskP/user/'+userId,{
+    headers: {
+      'Authorization': 'Bearer ' + VueCookies.get('token')
+    }
+  }).then((response) => {
     tasks.value = response.data
     tasks.value.forEach(element => {
       element['edit'] = false;
     });
   });
+  }
+  
 }
 provide('counter' , counter);
 provide('increment' , increment);

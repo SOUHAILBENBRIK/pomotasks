@@ -1,11 +1,39 @@
 <script setup>
-import { RouterLink } from 'vue-router';
+import { ref } from 'vue';
 import check from '../assets/check.svg';
 import person from '../assets/person.svg';
 import router from '@/router';
+import { onMounted } from 'vue';
+import VueCookies from 'vue-cookies';
+import {jwtDecode} from 'jwt-decode';
+import { useWindowSize } from '@vueuse/core';
+
+const userName = ref("");
+const showDropDown = ref(false);
+const { width } = useWindowSize()
+function showDropDownMenu(){
+    showDropDown.value = !showDropDown.value;
+}
+function logout(){
+    VueCookies.remove('token');
+    showDropDown.value = false;
+    userName.value = "";
+}
+function navigateElement(path){
+    router.push(path);
+}
 function navigateToSignUp(){
     router.push('/signup');
 }
+onMounted(() => {
+    const token = VueCookies.get('token'); 
+    if (token) {
+        const decoded = jwtDecode(token);
+        userName.value = decoded['username'];
+    }else{
+        userName.value = "";
+    }
+});
 </script>
 
 <template>
@@ -14,11 +42,37 @@ function navigateToSignUp(){
             <div class="titleNavBar">
                 <img :src="check" >
             <h1 class="title">PomoTasks</h1>
+            
             </div>
-        <div class="rightNavBar">
+        <div class="rightNavBar" v-if="width > 1400">
             <button class="buttonNav">Report</button>
         <button class="buttonNav">Settings</button>
-        <img :src="person" class="icons" @click="navigateToSignUp">
+        <img :src="person" class="icons" @click="navigateToSignUp" v-if="userName === ''">
+        <div style="position: relative;">
+            <p v-if="userName !== ''" class="userName" @click="showDropDownMenu">{{userName}}</p>
+            <div class="dropDown" v-if="userName !== '' && showDropDown">
+                <p class="elementOfDropDown" @click="navigateElement('/profile')">Profile</p>
+                <p class="elementOfDropDown" @click="navigateElement('/help')">Help</p>
+                <p class="elementOfDropDown" @click="logout">Logout</p>
+
+                
+            </div>
+        </div>
+
+        </div>
+        <div v-else>
+            <img :src="person" class="icons" @click="navigateToSignUp" v-if="userName === ''">
+            <div style="position: relative;">
+                <p v-if="userName !== ''" class="userName" @click="showDropDownMenu">{{userName}}</p>
+                <div class="dropDown" v-if="userName !== '' && showDropDown">
+                    <p class="elementOfDropDown" @click="navigateElement('/report')">Report</p>
+                    <p class="elementOfDropDown" @click="navigateHelp('/settings')">Settings</p>
+                    
+                    <p class="elementOfDropDown" @click="navigateElement('/profil')">Profile</p>
+                    <p class="elementOfDropDown" @click="navigateHelp('/help')">Help</p>
+                    <p class="elementOfDropDown" @click="logout">Logout</p>
+                </div>
+            </div>
 
         </div>
         </div>
@@ -85,5 +139,33 @@ function navigateToSignUp(){
         border-radius: 100%;
         background-color: rgba(255, 255, 255, 0.4);
         padding: 5px;
+    }
+    .userName{
+        font-size : 1rem;
+        color: white;
+        background-color: rgba(255, 255, 255, 0.4);
+        padding: 7px 4px;
+        border-radius: 4px;
+        border : white solid 1px;
+        cursor: pointer;
+        width: 10vw;
+        text-align: center;
+        text-overflow: ellipsis;
+    }
+    .dropDown {
+        position: absolute;
+    top: 100%;  
+    left: 0;
+    background-color: white;
+    color: black;
+    border-radius: 4px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 5px 10px;
+    z-index: 100;
+    white-space: nowrap;
+    }
+    .elementOfDropDown{
+        width: 10vw;
+        cursor: pointer;
     }
 </style>

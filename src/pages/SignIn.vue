@@ -1,9 +1,8 @@
 <script setup>
-import { ref } from 'vue';
 import check from '../assets/check.svg'
 import google from '../assets/google.svg';
-import {signUp} from "../services/auth.js";
-const name = ref("");
+import {signIn} from "../services/auth.js";
+import { ref } from 'vue';
 const email = ref("");
 const password = ref("");
 </script>
@@ -13,13 +12,12 @@ const password = ref("");
         <img :src="check" alt="check" class="icons"/>
         <h1 class="title">PomoTaks</h1>
     </div>
-    <p class="subClass">Create Account</p>
+    <p class="subClass">Log In</p>
     <div class="form">
         
-        <input type="text" placeholder="Name" class="input" v-model="name"/>
-        <input type="email" placeholder="Email"  class="input" v-model="email"/>
-        <input type="password" placeholder="Password"  class="input" v-model="password"/>
-        <button class="signUpButton" @click="()=>signUp(email , password)">Sign Up</button>
+        <input type="email" placeholder="Email"  class="input" v-model="email" />
+        <input type="password" placeholder="Password"  class="input"  v-model="password"/>
+        <button class="signUpButton" @click="() => signIn(email,password)">Log in</button>
         <div class="orDiv">
             <div class="vi"></div>
             <p>Or</p>
@@ -27,11 +25,11 @@ const password = ref("");
         </div>
         <button class="googleButton">
             <img :src="google"  class="iconG">
-            Sign Up with Google
+            Login with Google
         </button>
     </div>
-    <p class="subClass">Already have an account</p>
-    <router-link to="/login" class="navigatorButton">Login</router-link>
+    <p class="subClass">Do not have an account?</p>
+    <router-link to="/signup" class="navigatorButton">Create Account</router-link>
 </template>
 
 <style scoped>
@@ -61,7 +59,7 @@ const password = ref("");
 .form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
     margin: 0;
     padding: 0;
     align-items: center;
